@@ -44,10 +44,11 @@ noiseMax = 4.0
 # If log is enabled, logInput and logOuput
 # can be enabled independently 
 log = True
-logInput = False
-logOutput = False
+logInput = True
+logOutputs = True
 logIn = [0.0]
-logOut = [0.0]
+logOut1 = [0]
+logOut2 = [0]
 
 # Prints enabled/disabled
 debug_mode = True
@@ -71,7 +72,7 @@ def model():
 # VII Simpósio Brasileiro de Automação Inteligente.
 # São Luís, setembro de 2005
 #
-	global readChannel, writeChannel
+	global readChannel, writeChannel,logIn,logOut1,logOut2
 	# Tank orifice diameter	(cm^2)
 	a1 = 0.178
 	a2 = a1
@@ -123,9 +124,10 @@ def model():
 
 		if log:
 			if logInput:
-				logIn.append(readChannel)
-			if logOutput:
-				logOut.append(writeChannel)
+				logIn.append(writeChannel)
+			if logOutputs:
+				logOut1.append(readChannel[0])
+				logOut2.append(readChannel[1])
 		if debug_mode:
 			print 'Pump: %f' %  writeChannel
 			print 'Level 1: ' % xt[0]
@@ -140,11 +142,19 @@ except:
 
 # Save log
 def handler(signum, frame):
+	global logIn, logOut1, logOut2
 	if log:
 		if logInput:
-			print logIn
-		if logOutput:
-			print logOut
+			filelog = open('logInput', 'w');
+			filelog.write(str(logIn))
+			filelog.close()
+		if logOutputs:
+			filelog = open('logOutput1', 'w');
+			filelog.write(str(logOut1))
+			filelog.close()
+			filelog = open('logOutput2', 'w');
+			filelog.write(str(logOut2))
+			filelog.close()
 		print "\nLog saved!"
 
 signal.signal(signal.SIGINT, handler)
