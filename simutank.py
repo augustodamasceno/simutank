@@ -41,7 +41,7 @@ noisePeriod = 0.01
 noiseMax = 4.0
 
 # Configure log
-# If log is enabled, logInput and logOuput
+# If log is enabled, logInput and logOuputs
 # can be enabled independently 
 log = True
 logInput = True
@@ -111,7 +111,7 @@ def model():
 		# x* = Ax+Bu
 		# x* = dx/dt = (x-x_past)/d_time		
 		xt = xt + time_interval*(Ax+Bu.T)	
-		
+	
 		# Prevent negative level
 		if xt[0] < 0.0:
 			xt[0] = 0.0
@@ -130,8 +130,8 @@ def model():
 				logOut2.append(readChannel[1])
 		if debug_mode:
 			print 'Pump: %f' %  writeChannel
-			print 'Level 1: ' % xt[0]
-			print 'Level 2: ' % xt[1]	
+			print 'Level 1: %f' % xt[0]
+			print 'Level 2: %f' % xt[1]	
 		time.sleep(time_interval)
 
 # Create model thread
