@@ -26,19 +26,11 @@ import re
 import numpy
 import math
 import signal
+import os
 
 # Configure ip and port   
 ip = '127.0.0.1'
 port = 20081 
-
-# Configure noise
-# When noise is enabled, each noisePeriod seconds,
-# a noise between 0% and noiseLevel% of noiseMax is added
-# to the signal response
-noise = False
-noiseLevel = 0.01
-noisePeriod = 0.01
-noiseMax = 4.0
 
 # Configure log
 # If log is enabled, logInput and logOuputs
@@ -54,6 +46,7 @@ logOut2 = [0]
 debug_mode = True
 
 # Lock communication before exit
+# DO NOT EDIT THIS VARIABLE
 lock = False
 
 # Model
