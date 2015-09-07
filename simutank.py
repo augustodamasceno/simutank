@@ -26,7 +26,6 @@ import re
 import numpy
 import math
 import signal
-import os
 
 # Configure ip and port   
 ip = '127.0.0.1'
