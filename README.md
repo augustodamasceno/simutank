@@ -1,3 +1,4 @@
+#simutank
 Simulator for Quanser's Coupled Tanks 
 
 The interface is compatible with the server used in course  
@@ -7,3 +8,22 @@ The interface is compatible with the server used in course
   Department of Computer Engineering and Automation - DCA  
   Center of Technology - CT  
   Federal University of Rio Grande do Norte - UFRN, Natal, Brazil  
+  
+#Communication  
+**READ an AD**  
+**WRITE a DA**  
+  
+Reading channel 0 (Level Tank 1)  
+  "READ 0\n"  
+  **Everything ok, will you receive "%d\n"**  
+  **Otherwise "WRG\n"**  
+Reading channel 1 (Level Tank 2)  
+  "READ 1\n"  
+  **Everything ok, will you receive "%d\n"**  
+  **Otherwise "WRG\n"**  
+Writing channel 0 (pump)  
+  "WRITE 0 %d\n"  
+  **Everything ok, will you receive "ACK\n"**  
+  **Otherwise "WRG\n"**  
+  
+  
