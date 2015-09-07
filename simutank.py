@@ -24,6 +24,8 @@ import time
 import socket
 import re
 import numpy
+import math
+import signal
 
 # Configure ip and port   
 ip = '127.0.0.1'
@@ -41,9 +43,11 @@ noiseMax = 4.0
 # Configure log
 # If log is enabled, logInput and logOuput
 # can be enabled independently 
-log = False
+log = True
 logInput = False
 logOutput = False
+logIn = [0.0]
+logOut = [0.0]
 
 # Prints enabled/disabled
 debug_mode = True
@@ -51,7 +55,7 @@ debug_mode = True
 # Model
 readChannel = [0.0,0.0]
 writeChannel = 0.0
-time_interval = 2
+time_interval = 0.05
 def model():
 ###
 # Model reference from:
@@ -66,21 +70,21 @@ def model():
 #
 	global readChannel, writeChannel
 	# Tank orifice diameter	(cm^2)
-	a1 = 0,178
+	a1 = 0.178
 	a2 = a1
 	# Tank base area (cm^2)
-	A1 = 15,518
+	A1 = 15.518
 	A2 = A1
 	# Gravitational acceleration (m/s^2)
 	g = 9.81
 	# Pump flow constant ((cm^3)/sV)
 	km = 4.6
 	# Voltage applied (V)
-	Vp = 0
+	writeChannel = 0.0
 	# Level tank 1
-	L1 = 0
+	readChannel[0] = 0.0
 	# Level tank 2
-	L2 = 0
+	readChannel[1] = 0.0
 
 	# Operating Points 5cm and 25cm
 	# Equation 1 (LaTeX):
@@ -91,23 +95,36 @@ def model():
 	# +\frac{a_{1}}{A_{2}}\sqrt{2gL_{1}}
 
     # State space
-	A =  numpy.array([[0.0, 0.0], [0.0,0.0]]) 
-	B = numpy.array([0.0,0.0]).T
-	C =  numpy.array([0.0,0.0])
-	D =  numpy.array([0.0])
-	x = numpy.array([0.0,0.0]).T
-	u =  numpy.array([0.0])
-	y =  numpy.array([0.0])
-   
+	A =  numpy.array([[(a1/A1)*math.sqrt(2*g), 0.0],\
+		 [(a1/A2)*math.sqrt(2*g) , (a2/A2)*math.sqrt(2*g)]]) 
+	Bt = numpy.array([(km/A1),0.0])
+	xt = numpy.array([0.0,0.0])
+    
 	while 1:
-		Bu = (B).dot(u)
-		Du = D.dot(u)
-		Ax = A.dot(x)
-		Cx = C.dot(x)
-		
-		readChannel[0]
+		Ax = A.dot(xt.T)
+		Bu = Bt.T*writeChannel
+	
+		# x* = Ax+Bu
+		# x* = dx/dt = (x-x_past)/d_time		
+		xt = xt + time_interval*(Ax+Bu.T)	
+		# Prevent negative level
+		if xt[0] < 0.0:
+			xt[0] = 0.0
+		if xt[1] < 0.0:
+			xt[1] = 0.0
+
+		readChannel[0] = xt[0]
+		readChannel[1] = xt[1]
+
+		if log:
+			if logInput:
+				logIn.append(readChannel)
+			if logOutput:
+				logOut.append(writeChannel)
 		if debug_mode:
-			print "Calculating..."
+			print 'Pump: %f' %  writeChannel
+			print 'Level 1: ' % xt[0]
+			print 'Level 2: ' % xt[1]	
 		time.sleep(time_interval)
 
 # Create model thread
@@ -116,6 +133,17 @@ try:
 except:
    print "Model Thread Error!"
 
+# Save log
+def handler(signum, frame):
+	if log:
+		if logInput:
+			print logIn
+		if logOutput:
+			print logOut
+		print "\nLog saved!"
+
+signal.signal(signal.SIGINT, handler)
+	
 # Socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.bind((ip, port))
@@ -153,7 +181,7 @@ while 1:
 				readChannelstr = str(readChannel[int(numbers[0])]) 
 				readChannelstr = readChannelstr + '\n'
 				if debug_mode:
-					print "Read from channel %d, voltage: %f\n" \
+					print "Read from channel %d, level: %f\n" \
 						% (int(numbers[0]),readChannel[int(numbers[0])])
 				conn.send(readChannelstr)
 			else:
