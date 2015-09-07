@@ -53,6 +53,9 @@ logOut2 = [0]
 # Prints enabled/disabled
 debug_mode = True
 
+# Lock communication before exit
+lock = False
+
 # Model
 readChannel = [0,0]
 writeChannel = 0.0
@@ -99,28 +102,27 @@ def model():
 	# +\frac{a_{1}}{A_{2}}\sqrt{2gL_{1}}
 
     # State space
-	A =  numpy.array([[(a1/A1)*math.sqrt(2*g), 0.0],\
-		 [(a1/A2)*math.sqrt(2*g) , (a2/A2)*math.sqrt(2*g)]]) 
-	Bt = numpy.array([(km/A1),0.0])
-	xt = numpy.array([0.0,0.0])
+	A =  numpy.array([[(-1*a1/A1)*math.sqrt(2.0*g), 0.0],\
+		 [(a1/A2)*math.sqrt(2*g) , (-1*a2/A2)*math.sqrt(2.0*g)]]) 
+	B = numpy.array([(km/A1),0.0])
+	x = numpy.array([0.0,0.0])
     
 	while 1:
-		Ax = A.dot(xt.T)
-		Bu = Bt.T*writeChannel
+		Ax = A.dot(x)
+		Bu = B*float(writeChannel)
 	
-		# x* = Ax+Bu
-		# x* = dx/dt = (x-x_past)/d_time		
-		xt = xt + time_interval*(Ax+Bu.T)	
+		# x* = Ax+Bu		
+		x = x + (Ax+Bu)*time_interval	
 	
 		# Prevent negative level
-		if xt[0] < 0.0:
-			xt[0] = 0.0
-		if xt[1] < 0.0:
-			xt[1] = 0.0
+		if x[0] < 0.0:
+			x[0] = 0.0
+		if x[1] < 0.0:
+			x[1] = 0.0
 
 		# AD conversion
-		readChannel[0] = math.ceil(constantAD*xt[0])
-		readChannel[1] = math.ceil(constantAD*xt[1])
+		readChannel[0] = math.ceil(constantAD*x[0])
+		readChannel[1] = math.ceil(constantAD*x[1])
 
 		if log:
 			if logInput:
@@ -129,9 +131,9 @@ def model():
 				logOut1.append(readChannel[0])
 				logOut2.append(readChannel[1])
 		if debug_mode:
-			print 'Pump: %f' %  writeChannel
-			print 'Level 1: %f' % xt[0]
-			print 'Level 2: %f' % xt[1]	
+			print '\nPump: %.2f' %  writeChannel
+			print 'Level 1: %.2f' % x[0]
+			print 'Level 2: %.2f' % x[1]
 		time.sleep(time_interval)
 
 # Create model thread
@@ -140,9 +142,10 @@ try:
 except:
    print "Model Thread Error!"
 
-# Save log
+# Save logs, lock connections and exit
 def handler(signum, frame):
-	global logIn, logOut1, logOut2
+	global logIn, logOut1, logOut2,lock
+	lock = True
 	if log:
 		if logInput:
 			filelog = open('logInput', 'w');
@@ -165,6 +168,8 @@ sock.bind((ip, port))
 
 # Run server
 while 1:
+	if lock:
+		break
 	sock.listen(1)
 	conn, addr = sock.accept()
 
@@ -172,6 +177,8 @@ while 1:
 		print 'Connected with: ', addr
 
 	while 1:
+		if lock:
+			break
 		data = conn.recv(64)
 		if not data: break
 		if debug_mode:
