@@ -26,4 +26,6 @@ Writing channel 0 (pump)
   **Everything ok, will you receive "ACK\n"**  
   **Otherwise "WRG\n"**  
   
-  
+#Plot
+
+See examples in Octave, Scilab, Python and Matlab in "plot" folder.  
