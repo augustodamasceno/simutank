@@ -23,6 +23,7 @@ import thread
 import time
 import socket
 import re
+import numpy
 
 # Configure ip and port   
 ip = '127.0.0.1'
@@ -52,10 +53,59 @@ readChannel = [0.0,0.0]
 writeChannel = 0.0
 time_interval = 2
 def model():
+###
+# Model reference from:
+#
+# Júnior, Francisco G. F.; Maitelli, André L.; 
+# Lopes, José S. B.;Araújo, Fabio M. U.
+# Oliveira, Luiz A. H. G. 
+# IMPLEMENTAÇÃO DE CONTROLADORES PID UTILIZANDO
+# LÓGICA FUZZY E INSTRUMENTAÇÃO INDUSTRIAL
+# VII Simpósio Brasileiro de Automação Inteligente.
+# São Luís, setembro de 2005
+#
 	global readChannel, writeChannel
+	# Tank orifice diameter	(cm^2)
+	a1 = 0,178
+	a2 = a1
+	# Tank base area (cm^2)
+	A1 = 15,518
+	A2 = A1
+	# Gravitational acceleration (m/s^2)
+	g = 9.81
+	# Pump flow constant ((cm^3)/sV)
+	km = 4.6
+	# Voltage applied (V)
+	Vp = 0
+	# Level tank 1
+	L1 = 0
+	# Level tank 2
+	L2 = 0
+
+	# Operating Points 5cm and 25cm
+	# Equation 1 (LaTeX):
+	# \dot{L_{1}} = -\frac{a_{1}}{A_{1}}\sqrt{2gL_{1}}
+	# +\frac{K_{m}}{A_{1}}V_{p}
+	# Equation 2 (LaTeX):
+	#  \dot{L_{2}} = -\frac{a_{2}}{A_{2}}\sqrt{2gL_{2}}
+	# +\frac{a_{1}}{A_{2}}\sqrt{2gL_{1}}
+
+    # State space
+	A =  numpy.array([[0.0, 0.0], [0.0,0.0]]) 
+	B = numpy.array([0.0,0.0]).T
+	C =  numpy.array([0.0,0.0])
+	D =  numpy.array([0.0])
+	x = numpy.array([0.0,0.0]).T
+	u =  numpy.array([0.0])
+	y =  numpy.array([0.0])
+   
 	while 1:
-		#calc readChannels from input
-		readChannel[0] = time.time()
+		Bu = (B).dot(u)
+		Du = D.dot(u)
+		Ax = A.dot(x)
+		Cx = C.dot(x)
+		
+		readChannel[0]
 		if debug_mode:
 			print "Calculating..."
 		time.sleep(time_interval)
@@ -64,7 +114,7 @@ def model():
 try:
    thread.start_new_thread( model, () )
 except:
-   print "Thread Error!"
+   print "Model Thread Error!"
 
 # Socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -91,18 +141,24 @@ while 1:
 				if int(numbers[0]) == 0:
 					writeChannel = float(numbers[1])
 					if debug_mode:
-						print "Wrote to channel %d, voltage %f" \
+						print "Wrote to channel %d, voltage %f\n" \
 							% (int(numbers[0]),float(numbers[1]))
 					conn.send("ACK\n")
 				else:
 					conn.send("WRG\n")
 		elif "READ" in data:
 			numbers = re.findall(r"[-+]?\d*\.\d+|\d+",data)
-			if len(numbers) > 0:
+			if len(numbers) > 0 & \
+				(int(numbers[0]) == 0 | int(numbers[0]) == 1):
 				readChannelstr = str(readChannel[int(numbers[0])]) 
+				readChannelstr = readChannelstr + '\n'
 				if debug_mode:
-					print "Read from channel %d, voltage: %f" \
+					print "Read from channel %d, voltage: %f\n" \
 						% (int(numbers[0]),readChannel[int(numbers[0])])
 				conn.send(readChannelstr)
+			else:
+				conn.send("WRG\n")
+		else:
+				conn.send("WRG\n")
 	conn.close()
 

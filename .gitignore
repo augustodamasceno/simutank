@@ -1,4 +1,10 @@
 test.py
+test2.py
+compile.sh
+.simutank.py.swp
+.test.py.swp
+.test2.py.swp
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
