@@ -119,9 +119,9 @@ def model():
 				logOut1.append(readChannel[0])
 				logOut2.append(readChannel[1])
 		if debug_mode:
-			print '\nPump: %.2f' %  writeChannel
-			print 'Level 1: %.2f' % x[0]
-			print 'Level 2: %.2f' % x[1]
+			print '\nPump: %.2fV' %  writeChannel
+			print 'Level 1: %.2fcm' % (x[0]*6.1)
+			print 'Level 2: %.2fcm' % (x[1]*6.1)
 		time.sleep(time_interval)
 
 # Create model thread
@@ -146,7 +146,7 @@ def handler(signum, frame):
 			filelog = open('logOutput2', 'w');
 			filelog.write(str(logOut2))
 			filelog.close()
-		print "\nLog saved!\n"
+		print "\n\nLog saved!\n"
 
 signal.signal(signal.SIGINT, handler)
 	
