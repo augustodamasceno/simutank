@@ -52,8 +52,8 @@ lock = False
 readChannel = [0,0]
 writeChannel = 0.0
 time_interval = 0.05
-resolutionAD = 1023.0
-maxAnalogValue = 4.8
+resolutionAD = 2048.0
+maxAnalogValue = 5.0
 constantAD = resolutionAD/maxAnalogValue
 def model():
 ###
