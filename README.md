@@ -10,8 +10,8 @@ The interface is compatible with the server used in course
   Federal University of Rio Grande do Norte - UFRN, Natal, Brazil  
   
 #Communication  
-**READ an AD**  
-**WRITE voltage directly**  
+**READ voltage. The Pressure sensor sensitivity is 6.1 cm/V**  
+**WRITE voltage**  
   
 Reading channel 0 (Level Tank 1)  
   "READ 0\n"  
