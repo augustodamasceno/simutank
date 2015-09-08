@@ -49,12 +49,9 @@ debug_mode = True
 lock = False
 
 # Model
-readChannel = [0,0]
+readChannel = [0.0,0.0]
 writeChannel = 0.0
 time_interval = 0.05
-resolutionAD = 2048.0
-maxAnalogValue = 5.0
-constantAD = resolutionAD/maxAnalogValue
 def model():
 ###
 # Model reference from:
@@ -81,9 +78,9 @@ def model():
 	# Voltage applied (V)
 	writeChannel = 0.0
 	# Level tank 1
-	# x[1]
+	# x[0]
 	# Level tank 2
-	# x[2]
+	# x[1]
 
 	# Operating Points 5cm and 25cm
 	# Equation 1 (LaTeX):
@@ -112,9 +109,8 @@ def model():
 		if x[1] < 0.0:
 			x[1] = 0.0
 
-		# AD conversion
-		readChannel[0] = math.ceil(constantAD*x[0])
-		readChannel[1] = math.ceil(constantAD*x[1])
+		readChannel[0] = x[0]
+		readChannel[1] = x[1]
 
 		if log:
 			if logInput:
@@ -150,7 +146,7 @@ def handler(signum, frame):
 			filelog = open('logOutput2', 'w');
 			filelog.write(str(logOut2))
 			filelog.close()
-		print "\nLog saved!"
+		print "\nLog saved!\n"
 
 signal.signal(signal.SIGINT, handler)
 	
@@ -195,7 +191,7 @@ while 1:
 				readChannelstr = str(readChannel[int(numbers[0])]) 
 				readChannelstr = readChannelstr + '\n'
 				if debug_mode:
-					print "Read from channel %d, level: %d\n" \
+					print "Read from channel %d, level: %f\n" \
 						% (int(numbers[0]),readChannel[int(numbers[0])])
 				conn.send(readChannelstr)
 			else:

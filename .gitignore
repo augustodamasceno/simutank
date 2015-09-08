@@ -1,9 +1,6 @@
-test.py
-test2.py
+test*
 compile.sh
-.simutank.py.swp
-.test.py.swp
-.test2.py.swp
+*.swp
 logInput
 logOutput1
 logOutput2

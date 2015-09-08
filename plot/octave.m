@@ -1,6 +1,5 @@
-constantAD = 1024/4.8;
 tank1 = dlmread('logOutput1');
-tank1 = tank1./constantAD;  
+tank1 = tank1*6.1;  
 
 plot(tank1,'linewidth',2);
 title('Level Tank 1(cm) x time(cycles)','fontsize', 14)
