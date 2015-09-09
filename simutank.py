@@ -51,6 +51,7 @@ lock = False
 # Model
 readChannel = [0.0,0.0]
 writeChannel = 0.0
+amplifyWrite = 0.0
 time_interval = 0.05
 def model():
 ###
@@ -95,10 +96,14 @@ def model():
 		 [(a1/A2)*math.sqrt(2*g) , (-1*a2/A2)*math.sqrt(2.0*g)]]) 
 	B = numpy.array([(km/A1),0.0])
 	x = numpy.array([0.0,0.0])
+	xsqrt = numpy.array([0.0,0.0])
     
 	while 1:
-		Ax = A.dot(x)
-		Bu = B*float(writeChannel)
+		xsqrt[0] = math.sqrt(x[0])
+		xsqrt[1] = math.sqrt(x[1])
+
+		Ax = A.dot(xsqrt)
+		Bu = B*float(writeChannel)*amplifyWrite
 	
 		# x* = Ax+Bu		
 		x = x + (Ax+Bu)*time_interval	
