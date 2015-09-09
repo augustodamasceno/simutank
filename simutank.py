@@ -51,7 +51,7 @@ lock = False
 # Model
 readChannel = [0.0,0.0]
 writeChannel = 0.0
-amplifyWrite = 0.0
+amplifyWrite = 3.0
 time_interval = 0.05
 def model():
 ###
@@ -92,21 +92,26 @@ def model():
 	# +\frac{a_{1}}{A_{2}}\sqrt{2gL_{1}}
 
     # State space
-	A =  numpy.array([[(-1*a1/A1)*math.sqrt(2.0*g), 0.0],\
-		 [(a1/A2)*math.sqrt(2*g) , (-1*a2/A2)*math.sqrt(2.0*g)]]) 
-	B = numpy.array([(km/A1),0.0])
-	x = numpy.array([0.0,0.0])
-	xsqrt = numpy.array([0.0,0.0])
+	A11 = (-1*a1/A1)*math.sqrt(2.0*g)
+	A12 = 0.0
+	A21 = (a1/A2)*math.sqrt(2*g)
+	A22 = (-1*a2/A2)*math.sqrt(2.0*g)
+	B1 = (km/A1)
+	B2 = 0.0
+	x1 = 0.0	
+	x2 = 0.0
     
 	while 1:
 		xsqrt[0] = math.sqrt(x[0])
 		xsqrt[1] = math.sqrt(x[1])
 
-		Ax = A.dot(xsqrt)
-		Bu = B*float(writeChannel)*amplifyWrite
-	
+		Ax1 = (A11*x1)+(A12*x2)
+		Ax2 = (A21*x1)+(A22*x2)
+		Bu1 = B1*float(writeChannel)*amplifyWrite
+		Bu2 = B2*float(writeChannel)*amplifyWrite
+
 		# x* = Ax+Bu		
-		x = x + (Ax+Bu)*time_interval	
+		x1 = x1 + (Ax+Bu)*time_interval
 	
 		# Prevent negative level
 		if x[0] < 0.0:
@@ -121,7 +126,7 @@ def model():
 			if logInput:
 				logIn.append(writeChannel)
 			if logOutputs:
-				logOut1.append(readChannel[0])
+				logOut1.append(readChannel[0]*)
 				logOut2.append(readChannel[1])
 		if debug_mode:
 			print '\nPump: %.2fV' %  writeChannel
