@@ -66,7 +66,10 @@ def model():
 #
 	global readChannel, writeChannel,logIn,logOut1,logOut2
 	# Tank orifice diameter	(cm^2)
-	a1 = 0.178
+	a1 = 0.48
+	#a1 = 0.178
+	#a1 = 0.32
+	#a1 = 0.56
 	a2 = a1
 	# Tank base area (cm^2)
 	A1 = 15.518
@@ -74,7 +77,7 @@ def model():
 	# Gravitational acceleration (m/s^2)
 	g = 9.81
 	# Pump flow constant ((cm^3)/sV)
-	km = 4.6
+	km = 3.3#4.6
 	# Voltage applied (V)
 	writeChannel = 0.0
 	# Level tank 1
