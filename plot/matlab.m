@@ -1,4 +1,4 @@
-tank1 = dlmread('logOutput1');
+tank1 = dlmread('../logOutput1');
 tank1 = tank1*6.1;  
 
 plot(tank1,'linewidth',2);

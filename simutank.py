@@ -23,7 +23,6 @@ import thread
 import time
 import socket
 import re
-import numpy
 import math
 import signal
 
@@ -51,7 +50,7 @@ lock = False
 # Model
 readChannel = [0.0,0.0]
 writeChannel = 0.0
-amplifyWrite = 3.0
+amplify = 3.0
 time_interval = 0.05
 def model():
 ###
@@ -79,9 +78,9 @@ def model():
 	# Voltage applied (V)
 	writeChannel = 0.0
 	# Level tank 1
-	# x[0]
+	# x1
 	# Level tank 2
-	# x[1]
+	# x2
 
 	# Operating Points 5cm and 25cm
 	# Equation 1 (LaTeX):
@@ -92,46 +91,50 @@ def model():
 	# +\frac{a_{1}}{A_{2}}\sqrt{2gL_{1}}
 
     # State space
-	A11 = (-1*a1/A1)*math.sqrt(2.0*g)
+	A11 = (-1.0*a1/A1)*math.sqrt(2.0*g)
 	A12 = 0.0
-	A21 = (a1/A2)*math.sqrt(2*g)
-	A22 = (-1*a2/A2)*math.sqrt(2.0*g)
+	A21 = (a1/A2)*math.sqrt(2.0*g)
+	A22 = (-1.0*a2/A2)*math.sqrt(2.0*g)
 	B1 = (km/A1)
 	B2 = 0.0
 	x1 = 0.0	
 	x2 = 0.0
     
 	while 1:
-		xsqrt[0] = math.sqrt(x[0])
-		xsqrt[1] = math.sqrt(x[1])
+		x1sqrt = math.sqrt(x1)
+		x2sqrt = math.sqrt(x2)
 
-		Ax1 = (A11*x1)+(A12*x2)
-		Ax2 = (A21*x1)+(A22*x2)
-		Bu1 = B1*float(writeChannel)*amplifyWrite
-		Bu2 = B2*float(writeChannel)*amplifyWrite
+		Ax1 = (A11*x1sqrt)+(A12*x2sqrt)
+		Ax2 = (A21*x1sqrt)+(A22*x2sqrt)
+		u = writeChannel*amplify
+		Bu1 = B1*u
+		Bu2 = B2*u
 
 		# x* = Ax+Bu		
-		x1 = x1 + (Ax+Bu)*time_interval
-	
-		# Prevent negative level
-		if x[0] < 0.0:
-			x[0] = 0.0
-		if x[1] < 0.0:
-			x[1] = 0.0
+		x1 = x1 + (Ax1+Bu1)*time_interval
+		x2 = x2 + (Ax2+Bu2)*time_interval
 
-		readChannel[0] = x[0]
-		readChannel[1] = x[1]
+		# Prevent negative level
+		if x1 < 0.0:
+			x1 = 0.0
+		if x2 < 0.0:
+			x2 = 0.0
+
+		readChannel[0] = x1
+		readChannel[1] = x2
 
 		if log:
 			if logInput:
 				logIn.append(writeChannel)
 			if logOutputs:
-				logOut1.append(readChannel[0]*)
+				logOut1.append(readChannel[0])
 				logOut2.append(readChannel[1])
 		if debug_mode:
-			print '\nPump: %.2fV' %  writeChannel
-			print 'Level 1: %.2fcm' % (x[0]*6.1)
-			print 'Level 2: %.2fcm' % (x[1]*6.1)
+			print '\nPump: %.4fV' %  (writeChannel*amplify)
+			print 'Level 1: %.4fcm' % (x1*6.1)
+			print 'Level 2: %.4fcm' % (x2*6.1)
+			if amplify <> 1.0:
+				print 'Input Amplification Actived!'
 		time.sleep(time_interval)
 
 # Create model thread
@@ -147,14 +150,17 @@ def handler(signum, frame):
 	if log:
 		if logInput:
 			filelog = open('logInput', 'w');
-			filelog.write(str(logIn))
+			for i in range(len(logIn)):
+				filelog.write(str(logIn[i])+'\n')
 			filelog.close()
 		if logOutputs:
 			filelog = open('logOutput1', 'w');
-			filelog.write(str(logOut1))
+			for i in range(len(logOut1)):
+				filelog.write(str(logOut1[i])+'\n')
 			filelog.close()
 			filelog = open('logOutput2', 'w');
-			filelog.write(str(logOut2))
+			for i in range(len(logOut2)):
+				filelog.write(str(logOut2[i])+'\n')
 			filelog.close()
 		print "\n\nLog saved!\n"
 
