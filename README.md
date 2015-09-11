@@ -28,4 +28,4 @@ Writing channel 0 (pump)
   
 #Plot
 
-See examples in Octave, Scilab, Python and Matlab in "plot" folder.  
+See examples for plot with Octave, Scilab, Python and Matlab in "plot" directory.  
