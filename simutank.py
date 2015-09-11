@@ -89,8 +89,9 @@ def model():
 # VII Simpósio Brasileiro de Automação Inteligente.
 # São Luís, setembro de 2005
 #
-	global readChannel, writeChannel,logIn,logOut1,logOut2i
+	global readChannel, writeChannel,logIn,logOut1,logOut2
 	global noiseProbCh0,noiseProbCh1,noiseMaxCh0,noiseMaxCh1
+
 ############# CONFIGURE MODEL PARAMETERS ###################
 
 	# Tank orifice diameter	(cm^2)
