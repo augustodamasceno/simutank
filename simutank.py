@@ -57,10 +57,12 @@ amplifyWriteCh = 3.0
 timeInterval = 0.05
 
 # Read Channel 0 Noise
+# Probability and maximum value
 noiseProbCh0 = 0.00
 noiseMaxCh0 = 12.0
 
 # Read Channel 1 Noise
+# Probability and maximum value
 noiseProbCh1 = 0.00
 noiseMaxCh1 = 12.0
 
