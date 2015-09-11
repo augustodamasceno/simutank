@@ -25,6 +25,9 @@ import socket
 import re
 import math
 import signal
+import os
+
+############# CONFIGURE SIMULATOR ###########################
 
 # Configure ip and port   
 ip = '127.0.0.1'
@@ -41,17 +44,37 @@ logOut1 = [0]
 logOut2 = [0]
 
 # Prints enabled/disabled
-debug_mode = True
+DEBUG_MODE = True
 
 # Lock communication before exit
 # DO NOT EDIT THIS VARIABLE
-lock = False
+LOCK = False
 
 # Model
 readChannel = [0.0,0.0]
 writeChannel = 0.0
-amplify = 3.0
-time_interval = 0.05
+amplifyWriteCh = 3.0
+timeInterval = 0.05
+
+# Read Channel 0 Noise
+noiseProbCh0 = 0.00
+noiseMaxCh0 = 12.0
+
+# Read Channel 1 Noise
+noiseProbCh1 = 0.00
+noiseMaxCh1 = 12.0
+
+############################################################
+
+def noise(noiseProb,noiseMax):
+	if int(os.urandom(1).encode('hex'),16)/255. < noiseProb:	
+		i = int(os.urandom(4).encode('hex'),16)
+		f = float(int(os.urandom(6).encode('hex'),16))
+		f =  f/10000.0 - float(int(f/10000.0))
+		return i+f
+	else:
+		return 0
+
 def model():
 ###
 # Model reference from:
@@ -64,12 +87,12 @@ def model():
 # VII Simpósio Brasileiro de Automação Inteligente.
 # São Luís, setembro de 2005
 #
-	global readChannel, writeChannel,logIn,logOut1,logOut2
+	global readChannel, writeChannel,logIn,logOut1,logOut2i
+	global noiseProbCh0,noiseProbCh1,noiseMaxCh0,noiseMaxCh1
+############# CONFIGURE MODEL PARAMETERS ###################
+
 	# Tank orifice diameter	(cm^2)
 	a1 = 0.48
-	#a1 = 0.178
-	#a1 = 0.32
-	#a1 = 0.56
 	a2 = a1
 	# Tank base area (cm^2)
 	A1 = 15.518
@@ -77,13 +100,9 @@ def model():
 	# Gravitational acceleration (m/s^2)
 	g = 9.81
 	# Pump flow constant ((cm^3)/sV)
-	km = 3.3#4.6
-	# Voltage applied (V)
-	writeChannel = 0.0
-	# Level tank 1
-	# x1
-	# Level tank 2
-	# x2
+	km = 3.3
+
+############################################################
 
 	# Operating Points 5cm and 25cm
 	# Equation 1 (LaTeX):
@@ -109,13 +128,13 @@ def model():
 
 		Ax1 = (A11*x1sqrt)+(A12*x2sqrt)
 		Ax2 = (A21*x1sqrt)+(A22*x2sqrt)
-		u = writeChannel*amplify
+		u = writeChannel*amplifyWriteCh
 		Bu1 = B1*u
 		Bu2 = B2*u
 
 		# x* = Ax+Bu		
-		x1 = x1 + (Ax1+Bu1)*time_interval
-		x2 = x2 + (Ax2+Bu2)*time_interval
+		x1 = x1 + (Ax1+Bu1)*timeInterval
+		x2 = x2 + (Ax2+Bu2)*timeInterval
 
 		# Prevent negative level
 		if x1 < 0.0:
@@ -123,8 +142,8 @@ def model():
 		if x2 < 0.0:
 			x2 = 0.0
 
-		readChannel[0] = x1
-		readChannel[1] = x2
+		readChannel[0] = x1 + noise(noiseProbCh0,noiseMaxCh0)
+		readChannel[1] = x2 + noise(noiseProbCh1,noiseMaxCh1)
 
 		if log:
 			if logInput:
@@ -132,13 +151,13 @@ def model():
 			if logOutputs:
 				logOut1.append(readChannel[0])
 				logOut2.append(readChannel[1])
-		if debug_mode:
-			print '\nPump: %.4fV' %  (writeChannel*amplify)
+		if DEBUG_MODE:
+			print '\nPump: %.4fV' %  (writeChannel*amplifyWriteCh)
 			print 'Level 1: %.4fcm' % (x1*6.1)
 			print 'Level 2: %.4fcm' % (x2*6.1)
-			if amplify <> 1.0:
+			if amplifyWriteCh <> 1.0:
 				print 'Input Amplification Actived!'
-		time.sleep(time_interval)
+		time.sleep(timeInterval)
 
 # Create model thread
 try:
@@ -148,8 +167,8 @@ except:
 
 # Save logs, lock connections and exit
 def handler(signum, frame):
-	global logIn, logOut1, logOut2,lock
-	lock = True
+	global logIn, logOut1, logOut2,LOCK
+	LOCK = True
 	if log:
 		if logInput:
 			filelog = open('logInput', 'w');
@@ -175,20 +194,20 @@ sock.bind((ip, port))
 
 # Run server
 while 1:
-	if lock:
+	if LOCK:
 		break
 	sock.listen(1)
 	conn, addr = sock.accept()
 
-	if debug_mode:
+	if DEBUG_MODE:
 		print 'Connected with: ', addr
 
 	while 1:
-		if lock:
+		if LOCK:
 			break
 		data = conn.recv(64)
 		if not data: break
-		if debug_mode:
+		if DEBUG_MODE:
 			print "Received: ", data
 		if "WRITE" in data:
 			numbers = re.findall(r"[-+]?\d*\.\d+|\d+",data)
@@ -197,7 +216,7 @@ while 1:
 			else:	
 				if int(numbers[0]) == 0:
 					writeChannel = float(numbers[1])
-					if debug_mode:
+					if DEBUG_MODE:
 						print "Wrote to channel %d, voltage %f\n" \
 							% (int(numbers[0]),float(numbers[1]))
 					conn.send("ACK\n")
@@ -209,7 +228,7 @@ while 1:
 				(int(numbers[0]) == 0 | int(numbers[0]) == 1):
 				readChannelstr = str(readChannel[int(numbers[0])]) 
 				readChannelstr = readChannelstr + '\n'
-				if debug_mode:
+				if DEBUG_MODE:
 					print "Read from channel %d, level: %f\n" \
 						% (int(numbers[0]),readChannel[int(numbers[0])])
 				conn.send(readChannelstr)
