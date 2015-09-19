@@ -190,28 +190,48 @@ def handler(signum, frame):
 		print "\n\nLog saved!\n"
 
 signal.signal(signal.SIGINT, handler)
-	
-# Socket
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.bind((ip, port))
 
 # Run server
+connected = False
 while 1:
 	if LOCK:
 		break
-	sock.listen(1)
-	conn, addr = sock.accept()
+	
+	try:
+		# Socket  
+		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		sock.bind((ip, port))
+		sock.listen(1)
+		conn, addr = sock.accept()
+		connected = True
+	except socket.error, (value,message):
+		sock.close()
+		print "Error opening socket. " + message
+		connected = False
 
 	if DEBUG_MODE:
-		print 'Connected with: ', addr
+		if connected:
+			print 'Connected with: ', addr
 
-	while 1:
+	while connected:
 		if LOCK:
 			break
-		data = conn.recv(64)
-		if not data: break
+		
+		try:
+			data = conn.recv(64)
+		except socket.error, (value,message):
+			sock.close()
+			print "Error socket receiving. " + message
+			connected = False
+			break
+
+		if not data:
+			connected = False
+			break
+		
 		if DEBUG_MODE:
 			print "Received: ", data
+
 		if "WRITE" in data:
 			numbers = re.findall(r"[-+]?\d*\.\d+|\d+",data)
 			if len(numbers) < 2:
