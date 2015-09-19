@@ -15,15 +15,15 @@ The interface is compatible with the server used in course
   
 Reading channel 0 (Level Tank 1)  
   "READ 0\n"  
-  **Everything ok, will you receive "%f\n"**  
+  **Everything ok, you will receive "%f\n"**  
   **Otherwise "WRG\n"**  
 Reading channel 1 (Level Tank 2)  
   "READ 1\n"  
-  **Everything ok, will you receive "%f\n"**  
+  **Everything ok, you will receive "%f\n"**  
   **Otherwise "WRG\n"**  
 Writing channel 0 (pump)  
   "WRITE 0 %f\n"  
-  **Everything ok, will you receive "ACK\n"**  
+  **Everything ok, you will receive "ACK\n"**  
   **Otherwise "WRG\n"**  
   
 #Log
