@@ -45,6 +45,7 @@ logOut2 = [0]
 
 # Prints enabled/disabled
 DEBUG_MODE = True
+DEBUG_MODE_SOCKET = False
 
 # Lock communication before exit
 # DO NOT EDIT THIS VARIABLE
@@ -209,7 +210,7 @@ while 1:
 		print "Error opening socket. " + message
 		connected = False
 
-	if DEBUG_MODE:
+	if DEBUG_MODE_SOCKET:
 		if connected:
 			print 'Connected with: ', addr
 
@@ -229,7 +230,7 @@ while 1:
 			connected = False
 			break
 		
-		if DEBUG_MODE:
+		if DEBUG_MODE_SOCKET:
 			print "Received: ", data
 
 		if "WRITE" in data:
@@ -239,7 +240,7 @@ while 1:
 			else:	
 				if int(numbers[0]) == 0:
 					writeChannel = float(numbers[1])
-					if DEBUG_MODE:
+					if DEBUG_MODE_SOCKET:
 						print "Wrote to channel %d, voltage %f\n" \
 							% (int(numbers[0]),float(numbers[1]))
 					conn.send("ACK\n")
@@ -251,7 +252,7 @@ while 1:
 				(int(numbers[0]) == 0 | int(numbers[0]) == 1):
 				readChannelstr = str(readChannel[int(numbers[0])]) 
 				readChannelstr = readChannelstr + '\n'
-				if DEBUG_MODE:
+				if DEBUG_MODE_SOCKET:
 					print "Read from channel %d, level: %f\n" \
 						% (int(numbers[0]),readChannel[int(numbers[0])])
 				conn.send(readChannelstr)
