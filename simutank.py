@@ -147,8 +147,8 @@ def model():
 			x2 = 0.0
 
 		# Convert cm to sensor data
-		readChannel[0] = x1/6.1 + noise(noiseProbCh0,noiseMaxCh0)
-		readChannel[1] = x2/6.1 + noise(noiseProbCh1,noiseMaxCh1)
+		readChannel[0] = x1/6.25 + noise(noiseProbCh0,noiseMaxCh0)
+		readChannel[1] = x2/6.25 + noise(noiseProbCh1,noiseMaxCh1)
 
 		if log:
 			if logInput:
