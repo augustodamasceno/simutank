@@ -146,8 +146,9 @@ def model():
 		if x2 < 0.0:
 			x2 = 0.0
 
-		readChannel[0] = x1 + noise(noiseProbCh0,noiseMaxCh0)
-		readChannel[1] = x2 + noise(noiseProbCh1,noiseMaxCh1)
+		# Convert cm to sensor data
+		readChannel[0] = x1/6.1 + noise(noiseProbCh0,noiseMaxCh0)
+		readChannel[1] = x2/6.1 + noise(noiseProbCh1,noiseMaxCh1)
 
 		if log:
 			if logInput:
@@ -157,8 +158,8 @@ def model():
 				logOut2.append(readChannel[1])
 		if DEBUG_MODE:
 			print '\nPump: %.4fV' %  (writeChannel*amplifyWriteCh)
-			print 'Level 1: %.4fcm' % (x1*6.1)
-			print 'Level 2: %.4fcm' % (x2*6.1)
+			print 'Level 1: %.4fcm' % (readChannel[0])
+			print 'Level 2: %.4fcm' % (readChannel[1])
 			if amplifyWriteCh <> 1.0:
 				print 'Input Amplification Actived!'
 		time.sleep(timeInterval)
