@@ -158,8 +158,8 @@ def model():
 				logOut2.append(readChannel[1])
 		if DEBUG_MODE:
 			print '\nPump: %.4fV' %  (writeChannel*amplifyWriteCh)
-			print 'Level 1: %.4fcm' % (readChannel[0])
-			print 'Level 2: %.4fcm' % (readChannel[1])
+			print 'Level 1: %.4fcm' % x1
+			print 'Level 2: %.4fcm' % x2
 			if amplifyWriteCh <> 1.0:
 				print 'Input Amplification Actived!'
 		time.sleep(timeInterval)
