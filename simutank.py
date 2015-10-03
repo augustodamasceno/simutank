@@ -71,7 +71,7 @@ noiseMaxCh1 = 12.0
 
 def noise(noiseProb,noiseMax):
 	if int(os.urandom(1).encode('hex'),16)/255. < noiseProb:	
-		i = int(os.urandom(4).encode('hex'),16)
+		i = int(os.urandom(4).encode('hex'),16) % noiseMax
 		f = float(int(os.urandom(6).encode('hex'),16))
 		f =  f/10000.0 - float(int(f/10000.0))
 		return i+f
