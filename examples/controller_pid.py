@@ -18,8 +18,8 @@ sampleTime = 0.1
 error = setPoint-pv
 errorPrevious = 0.0
 kp = 3.0
-ki = 1.5
-kd = 0.1
+ki = 5.0
+kd = 0.01
 kwd = 0.0
 
 # Manipulated Variable

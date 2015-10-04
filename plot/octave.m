@@ -1,5 +1,5 @@
 tank1 = dlmread('../logOutput1');
-tank1 = tank1*6.1;  
+tank1 = tank1*6.25;  
 
 plot(tank1,'linewidth',2);
 title('Level Tank 1(cm) x time(cycles)','fontsize', 14)

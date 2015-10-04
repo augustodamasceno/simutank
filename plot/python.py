@@ -3,7 +3,7 @@ import matplotlib.pyplot as plot
 tank1File = open('../logOutput1', 'r')
 tank1 = []
 for line in tank1File:
-	tank1.append(float(line))
+	tank1.append(float(line)*6.25)
 
 plot.plot(tank1)
 plot.xlabel('time(cycles)')
