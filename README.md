@@ -7,7 +7,10 @@ The interface is compatible with the server used in course
 
   Department of Computer Engineering and Automation - DCA  
   Center of Technology - CT  
-  Federal University of Rio Grande do Norte - UFRN, Natal, Brazil  
+  Federal University of Rio Grande do Norte - UFRN, Natal, Brazil    
+
+#Configuration  
+To configure the simulator, see line 30 and following lines. 
   
 #Communication  
 **READ voltage. The Pressure sensor sensitivity is 6.25 cm/V**  

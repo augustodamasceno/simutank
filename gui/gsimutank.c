@@ -19,6 +19,7 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
+#include <pthread.h> 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -30,9 +31,13 @@
 
 #define DEBUG_MODE
 
+/* Tanks Levels */
+float tank0, tank1;
 
-/* Put this code in a thread and share info with opengl graphics */
-int main(int argc, char ** argv)
+int getR;
+
+/* Update Tanks Levels Info */
+void * getData(void * in)
 {
     int endpointfd;
     int dataSize;
@@ -53,7 +58,8 @@ int main(int argc, char ** argv)
 #ifdef DEBUG_MODE
         printf("ERROR opening socket.\n");
 #endif
-        return -1;
+        getR = -1;
+        pthread_exit(&getR);
     }
 
 #ifdef DEBUG_MODE
@@ -65,7 +71,8 @@ int main(int argc, char ** argv)
 #ifdef DEBUG_MODE
         printf("ERROR connecting socket.\n");
 #endif
-        return -2;
+        getR = -2;
+        pthread_exit(&getR);
     }
 
 #ifdef DEBUG_MODE
@@ -74,9 +81,17 @@ int main(int argc, char ** argv)
 
     char c = '0';
     int counter;
+    int channel = 0;
     while(1)
     {
-        dataSize = sprintf(buffer,"READ 0\n");
+        if(channel)
+        {
+            dataSize = sprintf(buffer,"READ 1\n");
+        }
+        else
+        {
+            dataSize = sprintf(buffer,"READ 0\n");
+        }
 
         sendto(endpointfd,buffer,dataSize,0, \
             (struct sockaddr *)&addr,addrSize);
@@ -97,12 +112,40 @@ int main(int argc, char ** argv)
             buffer[counter+1] = '\0';
         }  
 
-        printf("Received from server: %s\n",buffer);
+        if(channel)
+        {
+            /* Pressure sensor sensitivity = 6.25 cm/V  */
+            tank1 = (float) atof(buffer)*6.25;
+            channel = 0;
+        }
+        else
+        {
+            /* Pressure sensor sensitivity = 6.25 cm/V */
+            tank0 = (float) atof(buffer)*6.25;
+            channel = 1;
+        }
 
 #ifdef __unix__
-        usleep(40000);
+        /* 25 data about tanks per sec */
+        usleep(20000);
 #endif
     }
-    
+ 
+}
+
+int main(int argc, char ** argv)
+{
+    pthread_t thread;
+    if(pthread_create(&thread,NULL,getData,NULL))
+    {
+#ifdef DEBUG_MODE
+        printf("Error creating \'getData\' thread.\n");
+#endif
+        return -1;
+    }
+
+    /* Graphics Here! */
+
+    pthread_join(thread,NULL);
     return 0;
 }
