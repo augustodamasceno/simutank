@@ -3,7 +3,7 @@
 
 ##
 #  Simulator for Quanser's Coupled Tanks
-#  Copyright (C) 2015, Augusto Damasceno
+#  Copyright (C) 2015,2016, Augusto Damasceno
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -31,7 +31,10 @@ import os
 
 # Configure ip and port   
 ip = '127.0.0.1'
-port = 20081 
+port = 20081
+
+# Max connections using the simulator
+maxClients = 2
 
 # Configure log
 # If log is enabled, logInput and logOuputs
@@ -46,6 +49,7 @@ logOut2 = [0]
 # Prints enabled/disabled
 DEBUG_MODE = True
 DEBUG_MODE_SOCKET = False
+DEBUG_MODE_SOCKET_DATA = False
 
 # Lock communication before exit
 # DO NOT EDIT THIS VARIABLE
@@ -164,11 +168,68 @@ def model():
 				print 'Input Amplification Actived!'
 		time.sleep(timeInterval)
 
-# Create model thread
-try:
-   thread.start_new_thread( model, () )
-except:
-   print "Model Thread Error!"
+def connectionAcc(conn, addr):
+    global readChannel,writeChannel,clients
+
+    if DEBUG_MODE_SOCKET:
+        print 'Connected with: ', addr
+    
+    clients = clients + 1
+
+    if DEBUG_MODE_SOCKET:
+        print 'Client ' + str(clients)
+        if (clients >= maxClients):
+            print 'Max number of clients reached!'
+
+    while(1):
+        if LOCK:
+            break
+        
+        try:
+            data = conn.recv(64)
+        except socket.error, (value,message):
+            sock.close()
+            print "Error socket receiving. " + message
+            connected = False
+            break
+
+        if not data:
+            connected = False
+            break
+        
+        if DEBUG_MODE_SOCKET_DATA:
+            print "Received: ", data
+
+        if "WRITE" in data:
+            numbers = re.findall(r"[-+]?\d*\.\d+|\d+",data)
+            if len(numbers) < 2:
+                conn.send("WRG\n")
+            else:   
+                if int(numbers[0]) == 0:
+                    writeChannel = float(numbers[1])
+                    if DEBUG_MODE_SOCKET_DATA:
+                        print "Wrote to channel %d, voltage %f\n" \
+                            % (int(numbers[0]),float(numbers[1]))
+                    conn.send("ACK\n")
+                else:
+                    conn.send("WRG\n")
+        elif "READ" in data:
+            numbers = re.findall(r"[-+]?\d*\.\d+|\d+",data)
+            if len(numbers) > 0 & \
+                (int(numbers[0]) == 0 | int(numbers[0]) == 1):
+                readChannelstr = str(readChannel[int(numbers[0])]) 
+                readChannelstr = readChannelstr + '\n'
+                if DEBUG_MODE_SOCKET_DATA:
+                    print "Read from channel %d, level: %f\n" \
+                        % (int(numbers[0]),readChannel[int(numbers[0])])
+                conn.send(readChannelstr)
+            else:
+                conn.send("WRG\n")
+        else:
+                conn.send("WRG\n")
+
+    conn.close() 
+    clients = clients - 1
 
 # Save logs, lock connections and exit
 def handler(signum, frame):
@@ -193,73 +254,38 @@ def handler(signum, frame):
 
 signal.signal(signal.SIGINT, handler)
 
+# Create model thread
+try:
+   thread.start_new_thread( model, () )
+except:
+    print "Model Thread Error!"
+    sys.exit(-1)
+
 # Run server
-connected = False
-while 1:
-	if LOCK:
-		break
-	
-	try:
-		# Socket  
-		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		sock.bind((ip, port))
-		sock.listen(1)
-		conn, addr = sock.accept()
-		connected = True
-	except socket.error, (value,message):
-		sock.close()
-		print "Error opening socket. " + message
-		connected = False
+try:
+    # Socket  
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.bind((ip, port))
+    sock.listen(1)
+except socket.error, (value,message):
+	sock.close()
+	print "Error opening socket. " + message
 
-	if DEBUG_MODE_SOCKET:
-		if connected:
-			print 'Connected with: ', addr
-
-	while connected:
-		if LOCK:
-			break
-		
-		try:
-			data = conn.recv(64)
-		except socket.error, (value,message):
-			sock.close()
-			print "Error socket receiving. " + message
-			connected = False
-			break
-
-		if not data:
-			connected = False
-			break
-		
-		if DEBUG_MODE_SOCKET:
-			print "Received: ", data
-
-		if "WRITE" in data:
-			numbers = re.findall(r"[-+]?\d*\.\d+|\d+",data)
-			if len(numbers) < 2:
-				conn.send("WRG\n")
-			else:	
-				if int(numbers[0]) == 0:
-					writeChannel = float(numbers[1])
-					if DEBUG_MODE_SOCKET:
-						print "Wrote to channel %d, voltage %f\n" \
-							% (int(numbers[0]),float(numbers[1]))
-					conn.send("ACK\n")
-				else:
-					conn.send("WRG\n")
-		elif "READ" in data:
-			numbers = re.findall(r"[-+]?\d*\.\d+|\d+",data)
-			if len(numbers) > 0 & \
-				(int(numbers[0]) == 0 | int(numbers[0]) == 1):
-				readChannelstr = str(readChannel[int(numbers[0])]) 
-				readChannelstr = readChannelstr + '\n'
-				if DEBUG_MODE_SOCKET:
-					print "Read from channel %d, level: %f\n" \
-						% (int(numbers[0]),readChannel[int(numbers[0])])
-				conn.send(readChannelstr)
-			else:
-				conn.send("WRG\n")
-		else:
-				conn.send("WRG\n")
-	conn.close()
+clients = 0
+locked = False
+while(1):
+    if ((clients+1) < maxClients) | \
+        (locked & (clients < maxClients)):
+        locked = False
+        # Accept connection and create connection thread
+        conn, addr = sock.accept()
+        try:
+            thread.start_new_thread(connectionAcc, (conn,addr,) )
+        except:
+            print "Connecction Accepted Thread Error!"
+    else:
+        if DEBUG_MODE_SOCKET:
+            print 'Connections locked!'
+        time.sleep(1)
+        locked = True
 
