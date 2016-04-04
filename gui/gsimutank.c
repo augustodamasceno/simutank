@@ -134,7 +134,9 @@ void * getData(void * in)
 }
 
 /* Opengl Globals */
-GLfloat light_position[] = { 2.0, 3.0, -1.5, 0.0 }; 
+static GLfloat light_position[] = { 0.0, 0.0, 3.0, 0.0 }; 
+static move_x = 0;
+static move_y = 0;
 
 void init()
 {
@@ -163,19 +165,26 @@ void init()
 void display(void)
 {
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
+    glEnable (GL_LIGHTING);  
+
+    /* View */
     glPushMatrix ();
-
     glTranslatef (0.0, 0.0, -5.0);
-    glRotated (90,1,0,0);    
-
+    glRotated (move_x,0.0,1.0,0.0);
+    glRotated (move_y,1.0,0.0,0.0);   
+ 
+    /* Light */
+    glPushMatrix ();
     glLightfv (GL_LIGHT0, GL_POSITION, light_position);
     
+    glPopMatrix();    
+
     /* Tank 1  */
+    glPushMatrix ();
     GLfloat mat_ambient[] = { 0.0, 0.0, 0.0, 1.0 };
-    GLfloat mat_diffuse[] = { 0.1, 0.9, 0.9, 0.5 };
+    GLfloat mat_diffuse[] = { 0.1, 0.9, 0.9, 0.0 };
     GLfloat mat_specular[] = { 0.0, 0.0, 0.0, 1.0 };
-    GLfloat mat_shininess[] = { 0.0 };
+    GLfloat mat_shininess[] = { 75.0 };
     GLfloat mat_emission[] = {0.0, 0.0, 0.0, 1.0};
 
     glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
@@ -184,10 +193,20 @@ void display(void)
     glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
     glMaterialfv(GL_FRONT, GL_EMISSION, mat_emission);    
  
+    glRotated (90,1.0,0.0,0.0);
+    
     GLUquadric * quad = gluNewQuadric();
-    gluCylinder (quad,0.4, 0.4, 0.5, 100, 100); 
-   
-    glEnable (GL_LIGHTING);  
+    gluCylinder (quad,0.3, 0.3, 1.0, 50, 50);   
+    
+    /* Pump */
+    glPushMatrix ();
+
+    glTranslatef (0.275, -0.31, 0.925);
+    glRotated (90,0.0,0.0,1.0);    
+    glutSolidCube(0.15); 
+
+    glPopMatrix ();    
+    glPopMatrix ();
     glPopMatrix ();
     glFlush ();
 }
@@ -231,12 +250,38 @@ void mouse(int button, int state, int x, int y)
 
 void keyboard (unsigned char key, int x, int y)
 {
-   switch (key) {
-      case 27:   /* ESC */
-         printf("ESC Pressed.\n");
-         break;
-      default:
-         break;
+    switch (key)
+    {
+        case 27:   /* ESC */
+            exit(0);
+            break;
+        default:
+            break;
+   }
+}
+
+void keyboardSpecials (int key, int x, int y)
+{
+    switch (key)
+    {
+        case GLUT_KEY_RIGHT:
+            move_x = (move_x + 15) % 360;
+            glutPostRedisplay();
+            break;
+        case GLUT_KEY_LEFT:
+            move_x = (move_x + 345) % 360;
+            glutPostRedisplay();
+            break;
+        case GLUT_KEY_UP:
+            move_y = (move_y + 15) % 360;
+            glutPostRedisplay();
+            break;
+        case GLUT_KEY_DOWN:
+            move_y = (move_y + 345) % 360;
+            glutPostRedisplay();
+            break;       
+        default:
+            break;
    }
 }
 
@@ -262,6 +307,7 @@ int main(int argc, char ** argv)
     glutReshapeFunc(reshape);
     glutMouseFunc(mouse);
     glutKeyboardFunc(keyboard);
+    glutSpecialFunc(keyboardSpecials);
     glutMainLoop();
     
     ////pthread_join(thread,NULL);
