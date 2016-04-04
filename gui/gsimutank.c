@@ -133,9 +133,116 @@ void * getData(void * in)
  
 }
 
+/* Opengl Globals */
+GLfloat light_position[] = { 2.0, 3.0, -1.5, 0.0 }; 
+
+void init()
+{
+    glClearColor (1.0,1.0,1.0,0.0);
+    
+    GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+    GLfloat mat_shininess[] = { 30.0 }; 
+    GLfloat light_ambient[] = { 0.0, 0.0, 0.0, 1.0 };
+    GLfloat light_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
+    GLfloat light_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+    glShadeModel (GL_SMOOTH);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_DEPTH_TEST);
+}
+
+void display(void)
+{
+    glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    glPushMatrix ();
+
+    glTranslatef (0.0, 0.0, -5.0);
+    glRotated (90,1,0,0);    
+
+    glLightfv (GL_LIGHT0, GL_POSITION, light_position);
+    
+    /* Tank 1  */
+    GLfloat mat_ambient[] = { 0.0, 0.0, 0.0, 1.0 };
+    GLfloat mat_diffuse[] = { 0.1, 0.9, 0.9, 0.5 };
+    GLfloat mat_specular[] = { 0.0, 0.0, 0.0, 1.0 };
+    GLfloat mat_shininess[] = { 0.0 };
+    GLfloat mat_emission[] = {0.0, 0.0, 0.0, 1.0};
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+    glMaterialfv(GL_FRONT, GL_EMISSION, mat_emission);    
+ 
+    GLUquadric * quad = gluNewQuadric();
+    gluCylinder (quad,0.4, 0.4, 0.5, 100, 100); 
+   
+    glEnable (GL_LIGHTING);  
+    glPopMatrix ();
+    glFlush ();
+}
+
+void reshape (int w, int h)
+{
+   glViewport (0, 0, (GLsizei) w, (GLsizei) h);
+   glMatrixMode (GL_PROJECTION);
+   glLoadIdentity();
+   gluPerspective(40.0, (GLfloat) w/(GLfloat) h, 1.0, 20.0);
+   glMatrixMode(GL_MODELVIEW);
+   glLoadIdentity();
+}
+
+void mouse(int button, int state, int x, int y)
+{
+    switch (button)
+    {
+        case GLUT_LEFT_BUTTON:
+            if (state == GLUT_DOWN)
+            {
+                printf("Mouse Down, left.\n");
+            }
+            break;
+        case GLUT_MIDDLE_BUTTON:
+            if (state == GLUT_DOWN)
+            {
+                printf("Mouse Down, middle.\n");
+            }
+            break;
+        case GLUT_RIGHT_BUTTON:
+            if (state == GLUT_DOWN)
+            {
+                printf("Mouse Down, right.\n"); 
+            }
+            break;
+      default:
+         break;
+   }
+}
+
+void keyboard (unsigned char key, int x, int y)
+{
+   switch (key) {
+      case 27:   /* ESC */
+         printf("ESC Pressed.\n");
+         break;
+      default:
+         break;
+   }
+}
+
 int main(int argc, char ** argv)
 {
-    pthread_t thread;
+/*    pthread_t thread;
     if(pthread_create(&thread,NULL,getData,NULL))
     {
 #ifdef DEBUG_MODE
@@ -143,9 +250,21 @@ int main(int argc, char ** argv)
 #endif
         return -1;
     }
-
+*/
     /* Graphics Here! */
-
-    pthread_join(thread,NULL);
+    glutInit(&argc, argv);        
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitWindowSize(500,500);
+    glutInitWindowPosition(50,50);
+    glutCreateWindow("Simutank GUI");
+    init();
+    glutDisplayFunc(display); 
+    glutReshapeFunc(reshape);
+    glutMouseFunc(mouse);
+    glutKeyboardFunc(keyboard);
+    glutMainLoop();
+    
+    ////pthread_join(thread,NULL);
     return 0;
 }
+
