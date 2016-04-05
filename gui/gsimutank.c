@@ -134,78 +134,151 @@ void * getData(void * in)
 }
 
 /* Opengl Globals */
-static GLfloat light_position[] = { 0.0, 0.0, 3.0, 0.0 }; 
-static move_x = 0;
-static move_y = 0;
+static GLfloat light0_position[] = { 0.0, 0.00, 1.5, 1.0 }; 
+static GLfloat light1_position[] = { -1.0, 0.50, -1.50, 1.0 }; 
+static int move_x = 90;
+static int move_y = 0;
 
 void init()
 {
     glClearColor (1.0,1.0,1.0,0.0);
-    
-    GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-    GLfloat mat_shininess[] = { 30.0 }; 
-    GLfloat light_ambient[] = { 0.0, 0.0, 0.0, 1.0 };
-    GLfloat light_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
-    GLfloat light_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-
-    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+  
+    GLfloat shine[] = {100.0};
+    glMaterialfv(GL_FRONT, GL_SHININESS, shine);
+  
+    glLightfv(GL_LIGHT0, GL_POSITION, light0_position);
+    glLightfv(GL_LIGHT1, GL_POSITION, light1_position);
 
     glShadeModel (GL_SMOOTH);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-
+    glEnable(GL_BLEND);
+    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHT1);
     glEnable(GL_DEPTH_TEST);
 }
 
 void display(void)
 {
+    if(getR)
+    {
+        exit(getR);
+    }
+
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable (GL_LIGHTING);  
+
+    /* Light */
+    glPushMatrix ();
+    glLightfv (GL_LIGHT0, GL_POSITION, light0_position); 
+    glLightfv (GL_LIGHT1, GL_POSITION, light1_position); 
+    glPopMatrix ();
 
     /* View */
     glPushMatrix ();
     glTranslatef (0.0, 0.0, -5.0);
     glRotated (move_x,0.0,1.0,0.0);
     glRotated (move_y,1.0,0.0,0.0);   
- 
-    /* Light */
-    glPushMatrix ();
-    glLightfv (GL_LIGHT0, GL_POSITION, light_position);
-    
-    glPopMatrix();    
 
+    /* Material */ 
+    GLfloat mat_diffuse[] = { 0.1, 0.9, 0.9, 0.2 };
+    GLfloat mat_diffuse2[] = { 0.1, 0.9, 0.9, 1.0 };
+    GLfloat mat_shininess[] = { 5.0 };    
+    
     /* Tank 1  */
     glPushMatrix ();
-    GLfloat mat_ambient[] = { 0.0, 0.0, 0.0, 1.0 };
-    GLfloat mat_diffuse[] = { 0.1, 0.9, 0.9, 0.0 };
-    GLfloat mat_specular[] = { 0.0, 0.0, 0.0, 1.0 };
-    GLfloat mat_shininess[] = { 75.0 };
-    GLfloat mat_emission[] = {0.0, 0.0, 0.0, 1.0};
 
-    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
     glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-    glMaterialfv(GL_FRONT, GL_EMISSION, mat_emission);    
  
+    glTranslatef (0.0, 1.0, 0.0);
     glRotated (90,1.0,0.0,0.0);
     
     GLUquadric * quad = gluNewQuadric();
-    gluCylinder (quad,0.3, 0.3, 1.0, 50, 50);   
+    gluCylinder (quad,0.3, 0.3, 1.0, 1000, 1000);   
+
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse2);
+  
+    GLUquadric * quadD = gluNewQuadric();
+    GLUquadric * quadD2 = gluNewQuadric();
+    gluDisk (quadD,0.03,0.3,50,50);
     
+    glTranslatef (0.0, 0.0, 1.0);
+    gluDisk (quadD2,0.03,0.3,50,50); 
+
+    glPopMatrix();
+     
+    /* Tank 2  */
+    glPushMatrix ();
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+ 
+    glTranslatef (0.0, -0.5, 0.0);
+    glRotated (90,1.0,0.0,0.0);
+    
+    GLUquadric * quad2 = gluNewQuadric();
+    gluCylinder (quad2,0.3, 0.3, 1.0, 1000, 1000);       
+
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse2);
+ 
+    GLUquadric * quadD3 = gluNewQuadric();
+    GLUquadric * quadD4 = gluNewQuadric();
+    gluDisk (quadD3,0.03,0.3,50,50);
+    
+    glTranslatef (0.0, 0.0, 1.0);
+    gluDisk (quadD4,0.0,0.3,50,50); 
+
+    glPopMatrix();
+
+    /* Pipe */
+    glPushMatrix ();
+
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse2);
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+ 
+    glTranslatef (0.0, 0.0, 0.0);
+    glRotated (90,1.0,0.0,0.0);
+    
+    GLUquadric * quad3 = gluNewQuadric();
+    gluCylinder (quad3,0.03, 0.03, 1.0, 50, 50);       
+    
+    glPopMatrix();
+
     /* Pump */
     glPushMatrix ();
 
-    glTranslatef (0.275, -0.31, 0.925);
+    glTranslatef (0.275, -1.51, 0.325);
     glRotated (90,0.0,0.0,1.0);    
     glutSolidCube(0.15); 
 
-    glPopMatrix ();    
+    glPopMatrix();
+
+    /* Water Level 1 */
+    glPushMatrix ();
+
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse2);
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+ 
+    glTranslatef (0.0, 0.0, 0.0);
+    glRotated (-90,1.0,0.0,0.0);
+    
+    GLUquadric * quadW = gluNewQuadric();
+    gluCylinder (quadW,0.29, 0.29,\
+        (GLdouble) 1.0*(tank0/30.0), 1000, 1000);   
+
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse2);
+  
+    GLUquadric * quadWD = gluNewQuadric();
+    GLUquadric * quadWD2 = gluNewQuadric();
+    gluDisk (quadWD,0.03,0.29,50,50);
+    
+    glTranslatef (0.0, 0.0, (GLdouble)1.0*(tank0/30.0));
+    gluDisk (quadWD2,0.03,0.2,50,50); 
+    
+    glPopMatrix ();
+
+    /* Flush */
+    
     glPopMatrix ();
     glPopMatrix ();
     glFlush ();
@@ -255,6 +328,12 @@ void keyboard (unsigned char key, int x, int y)
         case 27:   /* ESC */
             exit(0);
             break;
+        case 82: /* Go to next case */
+        case 114: /* Reset Positions */
+            move_x = 90;
+            move_y = 0;
+            glutPostRedisplay();
+            break;
         default:
             break;
    }
@@ -287,7 +366,7 @@ void keyboardSpecials (int key, int x, int y)
 
 int main(int argc, char ** argv)
 {
-/*    pthread_t thread;
+    pthread_t thread;
     if(pthread_create(&thread,NULL,getData,NULL))
     {
 #ifdef DEBUG_MODE
@@ -295,7 +374,7 @@ int main(int argc, char ** argv)
 #endif
         return -1;
     }
-*/
+
     /* Graphics Here! */
     glutInit(&argc, argv);        
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
@@ -310,7 +389,8 @@ int main(int argc, char ** argv)
     glutSpecialFunc(keyboardSpecials);
     glutMainLoop();
     
-    ////pthread_join(thread,NULL);
+    pthread_join(thread,NULL);
+
     return 0;
 }
 
