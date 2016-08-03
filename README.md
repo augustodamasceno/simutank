@@ -10,7 +10,12 @@ The interface is compatible with the server used in course
   Federal University of Rio Grande do Norte - UFRN, Natal, Brazil    
 
 #Configuration  
-To configure the simulator, see line 30 and following lines. 
+** To configure the simulator, see line 30 and following lines.  
+** The system is multi user, set at least maxClients to 2 if you want  
+to control and use de GUI.  
+
+#GUI  
+** C code, needs pthread and OpenGL.  
   
 #Communication  
 **READ voltage. The Pressure sensor sensitivity is 6.25 cm/V**  
