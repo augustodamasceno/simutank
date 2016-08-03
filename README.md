@@ -11,7 +11,7 @@ The interface is compatible with the server used in course
 
 #Configuration  
 ** To configure the simulator, see line 30 and following lines.  
-** The system is multi user, set at least maxClients to 2 if you want  
+** The system is multi-user, set at least maxClients to 2 if you want  
 to control and use de GUI.  
 
 #GUI  
