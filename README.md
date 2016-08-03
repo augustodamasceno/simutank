@@ -12,7 +12,7 @@
 ## Configuration  
 * To configure the simulator, see line 30 and following lines.  
 * The system is multi-user, set at least maxClients to 2 if you want  
-to control and use de GUI.  
+to control and use the GUI.  
 
 ## GUI  
 * C code, needs pthread and OpenGL.  
