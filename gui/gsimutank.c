@@ -35,6 +35,7 @@
 float tank0, tank1;
 
 int getR;
+int initOK;
 
 /* Update Tanks Levels Info */
 void * getData(void * in)
@@ -128,6 +129,7 @@ void * getData(void * in)
 #ifdef __unix__
         /* 25 data about tanks per sec */
         usleep(20000);
+		if(initOK) glutPostRedisplay();
 #endif
     }
  
@@ -156,6 +158,7 @@ void init()
     glEnable(GL_LIGHT0);
     glEnable(GL_LIGHT1);
     glEnable(GL_DEPTH_TEST);
+	initOK = 1;
 }
 
 void display(void)
@@ -263,22 +266,30 @@ void display(void)
     glRotated (-90,1.0,0.0,0.0);
     
     GLUquadric * quadW = gluNewQuadric();
-    gluCylinder (quadW,0.29, 0.29,\
+    gluCylinder (quadW,0.31, 0.31,\
         (GLdouble) 1.0*(tank0/30.0), 1000, 1000);   
 
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse2);
-  
-    GLUquadric * quadWD = gluNewQuadric();
-    GLUquadric * quadWD2 = gluNewQuadric();
-    gluDisk (quadWD,0.03,0.29,50,50);
-    
-    glTranslatef (0.0, 0.0, (GLdouble)1.0*(tank0/30.0));
-    gluDisk (quadWD2,0.03,0.2,50,50); 
-    
     glPopMatrix ();
+
+    /* Water Level 2 */
+    glPushMatrix ();
+
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse2);
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+ 
+    glTranslatef (0.0, -1.5, 0.0);
+    glRotated (-90,1.0,0.0,0.0);
+    
+    GLUquadric * quadW2 = gluNewQuadric();
+    gluCylinder (quadW2,0.31, 0.31,\
+        (GLdouble) 1.0*(tank1/30.0), 1000, 1000);   
+
+    glPopMatrix ();
+
 
     /* Flush */
     
+    glPopMatrix ();
     glPopMatrix ();
     glPopMatrix ();
     glFlush ();
@@ -374,6 +385,8 @@ int main(int argc, char ** argv)
 #endif
         return -1;
     }
+	getR = 0;
+	initOK = 0;	
 
     /* Graphics Here! */
     glutInit(&argc, argv);        
