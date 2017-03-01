@@ -3,7 +3,7 @@
 
 ##
 #  Simulator for Quanser's Coupled Tanks
-#  Copyright (C) 2015,2016, Augusto Damasceno
+#  Copyright (C) 2015-2017, Augusto Damasceno
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -74,13 +74,13 @@ noiseMaxCh1 = 12.0
 ############################################################
 
 def noise(noiseProb,noiseMax):
-	if int(os.urandom(1).encode('hex'),16)/255. < noiseProb:	
-		i = int(os.urandom(4).encode('hex'),16) % noiseMax
-		f = float(int(os.urandom(6).encode('hex'),16))
-		f =  f/10000.0 - float(int(f/10000.0))
-		return i+f
-	else:
-		return 0
+    if int(os.urandom(1).encode('hex'),16)/255. < noiseProb:    
+        i = int(os.urandom(4).encode('hex'),16) % noiseMax
+        f = float(int(os.urandom(6).encode('hex'),16))
+        f =  f/10000.0 - float(int(f/10000.0))
+        return i+f
+    else:
+        return 0
 
 def model():
 ###
@@ -94,79 +94,83 @@ def model():
 # VII Simpósio Brasileiro de Automação Inteligente.
 # São Luís, setembro de 2005
 #
-	global readChannel, writeChannel,logIn,logOut1,logOut2
-	global noiseProbCh0,noiseProbCh1,noiseMaxCh0,noiseMaxCh1
+    global readChannel, writeChannel,logIn,logOut1,logOut2
+    global noiseProbCh0,noiseProbCh1,noiseMaxCh0,noiseMaxCh1
 
 ############# CONFIGURE MODEL PARAMETERS ###################
 
-	# Tank orifice diameter	(cm^2)
-	a1 = 0.48
-	a2 = a1
-	# Tank base area (cm^2)
-	A1 = 15.518
-	A2 = A1
-	# Gravitational acceleration (m/s^2)
-	g = 9.81
-	# Pump flow constant ((cm^3)/sV)
-	km = 3.3
+    # Tank orifice diameter    (cm^2)
+    a1 = 0.48
+    a2 = a1
+    # Tank base area (cm^2)
+    A1 = 15.518
+    A2 = A1
+    # Gravitational acceleration (m/s^2)
+    g = 9.81
+    # Pump flow constant ((cm^3)/sV)
+    km = 3.3
 
 ############################################################
 
-	# Operating Points 5cm and 25cm
-	# Equation 1 (LaTeX):
-	# \dot{L_{1}} = -\frac{a_{1}}{A_{1}}\sqrt{2gL_{1}}
-	# +\frac{K_{m}}{A_{1}}V_{p}
-	# Equation 2 (LaTeX):
-	#  \dot{L_{2}} = -\frac{a_{2}}{A_{2}}\sqrt{2gL_{2}}
-	# +\frac{a_{1}}{A_{2}}\sqrt{2gL_{1}}
+    # Operating Points 5cm and 25cm
+    # Equation 1 (LaTeX):
+    # \dot{L_{1}} = -\frac{a_{1}}{A_{1}}\sqrt{2gL_{1}}
+    # +\frac{K_{m}}{A_{1}}V_{p}
+    # Equation 2 (LaTeX):
+    #  \dot{L_{2}} = -\frac{a_{2}}{A_{2}}\sqrt{2gL_{2}}
+    # +\frac{a_{1}}{A_{2}}\sqrt{2gL_{1}}
 
     # State space
-	A11 = (-1.0*a1/A1)*math.sqrt(2.0*g)
-	A12 = 0.0
-	A21 = (a1/A2)*math.sqrt(2.0*g)
-	A22 = (-1.0*a2/A2)*math.sqrt(2.0*g)
-	B1 = (km/A1)
-	B2 = 0.0
-	x1 = 0.0	
-	x2 = 0.0
+    A11 = (-1.0*a1/A1)*math.sqrt(2.0*g)
+    A12 = 0.0
+    A21 = (a1/A2)*math.sqrt(2.0*g)
+    A22 = (-1.0*a2/A2)*math.sqrt(2.0*g)
+    B1 = (km/A1)
+    B2 = 0.0
+    x1 = 0.0    
+    x2 = 0.0
     
-	while 1:
-		x1sqrt = math.sqrt(x1)
-		x2sqrt = math.sqrt(x2)
+    while 1:
+        x1sqrt = math.sqrt(x1)
+        x2sqrt = math.sqrt(x2)
 
-		Ax1 = (A11*x1sqrt)+(A12*x2sqrt)
-		Ax2 = (A21*x1sqrt)+(A22*x2sqrt)
-		u = writeChannel*amplifyWriteCh
-		Bu1 = B1*u
-		Bu2 = B2*u
+        Ax1 = (A11*x1sqrt)+(A12*x2sqrt)
+        Ax2 = (A21*x1sqrt)+(A22*x2sqrt)
+        u = writeChannel*amplifyWriteCh
+        Bu1 = B1*u
+        Bu2 = B2*u
 
-		# x* = Ax+Bu		
-		x1 = x1 + (Ax1+Bu1)*timeInterval
-		x2 = x2 + (Ax2+Bu2)*timeInterval
+        # x* = Ax+Bu        
+        x1 = x1 + (Ax1+Bu1)*timeInterval
+        x2 = x2 + (Ax2+Bu2)*timeInterval
 
-		# Prevent negative level
-		if x1 < 0.0:
-			x1 = 0.0
-		if x2 < 0.0:
-			x2 = 0.0
+        # Prevent negative level and overflow
+        if x1 < 0.0:
+            x1 = 0.0
+        if x2 < 0.0:
+            x2 = 0.0
+        if x1 > 30.0:
+            x1 = 30.0
+        if x2 > 30.0:
+            x2 = 30.0
 
-		# Convert cm to sensor data
-		readChannel[0] = x1/6.25 + noise(noiseProbCh0,noiseMaxCh0)
-		readChannel[1] = x2/6.25 + noise(noiseProbCh1,noiseMaxCh1)
+        # Convert cm to sensor data
+        readChannel[0] = x1/6.25 + noise(noiseProbCh0,noiseMaxCh0)
+        readChannel[1] = x2/6.25 + noise(noiseProbCh1,noiseMaxCh1)
 
-		if log:
-			if logInput:
-				logIn.append(writeChannel)
-			if logOutputs:
-				logOut1.append(readChannel[0])
-				logOut2.append(readChannel[1])
-		if DEBUG_MODE:
-			print '\nPump: %.4fV' %  (writeChannel*amplifyWriteCh)
-			print 'Level 1: %.4fcm' % x1
-			print 'Level 2: %.4fcm' % x2
-			if amplifyWriteCh <> 1.0:
-				print 'Input Amplification Actived!'
-		time.sleep(timeInterval)
+        if log:
+            if logInput:
+                logIn.append(writeChannel)
+            if logOutputs:
+                logOut1.append(readChannel[0])
+                logOut2.append(readChannel[1])
+        if DEBUG_MODE:
+            print '\nPump: %.4fV' %  (writeChannel*amplifyWriteCh)
+            print 'Level 1: %.4fcm' % x1
+            print 'Level 2: %.4fcm' % x2
+            if amplifyWriteCh <> 1.0:
+                print 'Input Amplification Actived!'
+        time.sleep(timeInterval)
 
 def connectionAcc(conn, addr):
     global readChannel,writeChannel,clients
@@ -233,24 +237,24 @@ def connectionAcc(conn, addr):
 
 # Save logs, lock connections and exit
 def handler(signum, frame):
-	global logIn, logOut1, logOut2,LOCK
-	LOCK = True
-	if log:
-		if logInput:
-			filelog = open('logInput', 'w');
-			for i in range(len(logIn)):
-				filelog.write(str(logIn[i])+'\n')
-			filelog.close()
-		if logOutputs:
-			filelog = open('logOutput1', 'w');
-			for i in range(len(logOut1)):
-				filelog.write(str(logOut1[i])+'\n')
-			filelog.close()
-			filelog = open('logOutput2', 'w');
-			for i in range(len(logOut2)):
-				filelog.write(str(logOut2[i])+'\n')
-			filelog.close()
-		print "\n\nLog saved!\n"
+    global logIn, logOut1, logOut2,LOCK
+    LOCK = True
+    if log:
+        if logInput:
+            filelog = open('logInput', 'w');
+            for i in range(len(logIn)):
+                filelog.write(str(logIn[i])+'\n')
+            filelog.close()
+        if logOutputs:
+            filelog = open('logOutput1', 'w');
+            for i in range(len(logOut1)):
+                filelog.write(str(logOut1[i])+'\n')
+            filelog.close()
+            filelog = open('logOutput2', 'w');
+            for i in range(len(logOut2)):
+                filelog.write(str(logOut2[i])+'\n')
+            filelog.close()
+        print "\n\nLog saved!\n"
 
 signal.signal(signal.SIGINT, handler)
 
@@ -268,8 +272,8 @@ try:
     sock.bind((ip, port))
     sock.listen(1)
 except socket.error, (value,message):
-	sock.close()
-	print "Error opening socket. " + message
+    sock.close()
+    print "Error opening socket. " + message
 
 clients = 0
 locked = False

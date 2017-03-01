@@ -6,11 +6,11 @@
 import socket
 import time
 import pid
-
+import sys
 
 # PID Configuration
 channel = 0
-setPoint = 15.0
+setPoint = float(sys.argv[1]) 
 pv = 0.0
 mv = 0.0
 integral_ = 0.0
