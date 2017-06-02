@@ -94,48 +94,43 @@ def model():
 # VII Simpósio Brasileiro de Automação Inteligente.
 # São Luís, setembro de 2005
 #
+# See in file "ode.tex" the ordinary differential equations
+
     global readChannel, writeChannel,logIn,logOut1,logOut2
     global noiseProbCh0,noiseProbCh1,noiseMaxCh0,noiseMaxCh1
 
 ############# CONFIGURE MODEL PARAMETERS ###################
 
     # Tank orifice diameter    (cm^2)
-    a1 = 0.48
+    a1 = 0.17813919765
     a2 = a1
     # Tank base area (cm^2)
-    A1 = 15.518
+    A1 = 15.5179
     A2 = A1
     # Gravitational acceleration (m/s^2)
-    g = 9.81
+    g = 9.807
     # Pump flow constant ((cm^3)/sV)
-    km = 3.3
+    km = 4.6
+	# ODEs Constants
+	L20 = 15
+	L10 = ( (a2*a2)/(a1*a1) ) * L20
 
 ############################################################
 
-    # Operating Points 5cm and 25cm
-    # Equation 1 (LaTeX):
-    # \dot{L_{1}} = -\frac{a_{1}}{A_{1}}\sqrt{2gL_{1}}
-    # +\frac{K_{m}}{A_{1}}V_{p}
-    # Equation 2 (LaTeX):
-    #  \dot{L_{2}} = -\frac{a_{2}}{A_{2}}\sqrt{2gL_{2}}
-    # +\frac{a_{1}}{A_{2}}\sqrt{2gL_{1}}
-
     # State space
-    A11 = (-1.0*a1/A1)*math.sqrt(2.0*g)
-    A12 = 0.0
-    A21 = (a1/A2)*math.sqrt(2.0*g)
-    A22 = (-1.0*a2/A2)*math.sqrt(2.0*g)
+    A11 = -1*(a1/A1)*math.sqrt(g/(2*L10))
+    A12 = 0
+    A21 = (a1/A2)*math.sqrt(g/(2*L10))
+    A22 = -1*(a2/A2)*math.sqrt(g/(2*L20))
     B1 = (km/A1)
     B2 = 0.0
     x1 = 0.0    
     x2 = 0.0
     
     while 1:
-        x1sqrt = math.sqrt(x1)
-        x2sqrt = math.sqrt(x2)
-
-        Ax1 = (A11*x1sqrt)+(A12*x2sqrt)
-        Ax2 = (A21*x1sqrt)+(A22*x2sqrt)
+        
+		Ax1 = (A11*x1)+(A12*x2)
+        Ax2 = (A21*x1)+(A22*x2)
         u = writeChannel*amplifyWriteCh
         Bu1 = B1*u
         Bu2 = B2*u
