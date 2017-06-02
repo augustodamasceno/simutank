@@ -111,9 +111,9 @@ def model():
     g = 9.807
     # Pump flow constant ((cm^3)/sV)
     km = 4.6
-	# ODEs Constants
-	L20 = 15
-	L10 = ( (a2*a2)/(a1*a1) ) * L20
+    # ODEs Constants
+    L20 = 15
+    L10 = ( (a2*a2)/(a1*a1) ) * L20
 
 ############################################################
 
@@ -129,7 +129,7 @@ def model():
     
     while 1:
         
-		Ax1 = (A11*x1)+(A12*x2)
+        Ax1 = (A11*x1)+(A12*x2)
         Ax2 = (A21*x1)+(A22*x2)
         u = writeChannel*amplifyWriteCh
         Bu1 = B1*u
