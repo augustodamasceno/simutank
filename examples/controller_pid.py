@@ -10,7 +10,7 @@ import sys
 
 # PID Configuration
 channel = 0
-setPoint = 15#float(sys.argv[1]) 
+setPoint = float(sys.argv[1]) 
 pv = 0.0
 mv = 0.0
 integral_ = 0.0
@@ -42,7 +42,7 @@ def getPV():
         connected = False
 
 # Socket
-ip = '10.13.99.69'
+ip = '127.0.0.1'
 port = 20081
 try:
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
