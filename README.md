@@ -41,7 +41,3 @@ to control and use the GUI.
 ## Plot
 
 * See examples for plot with Octave, Scilab, Python and Matlab in "plot" directory.  
-
-## Supervisory Control System for Quanser's Coupled Tanks
-
-https://github.com/augustomatheuss/ctank
